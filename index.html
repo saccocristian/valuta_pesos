@@ -2,296 +2,112 @@
 <html lang="it">
 <head>
   <meta charset="utf-8" />
-  <!-- iPhone friendly viewport: no unexpected zooming + safe areas -->
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Pesos → Euro (Mobile)</title>
+  <title>Conversione ARS - EUR</title>
   <style>
-    /* ====== Mobile-first design tokens ====== */
     :root{
-      --bg:#0b0f14; --card:#0f172a; --muted:#9fb0c7; --text:#eef2f7; --accent:#22c55e; --danger:#ef4444;
+      --bg:#0b0f14; --card:#0f172a; --text:#eef2f7; --muted:#9fb0c7;
       --ring:#1f2937; --radius:18px; --shadow:0 14px 36px rgba(0,0,0,.45);
-      --pad: clamp(16px, 4vw, 24px);
-      --gap: clamp(14px, 4vw, 18px);
-      --fs-title: clamp(20px, 5.2vw, 28px);
-      --fs-label: 16px; /* ≥16px to avoid iOS zoom on focus */
-      --fs-input: clamp(24px, 7vw, 34px); /* big numbers */
-      --fs-meta: 15px;
-      --control-h: 64px; /* big tap target */
-      --btn-h: 56px;
+      --pad: clamp(16px, 4vw, 24px); --gap: clamp(14px, 4vw, 18px);
+      --fs-title: clamp(22px, 6vw, 30px);
+      --fs-label: 16px;            /* ≥16px evita lo zoom automatico iOS */
+      --fs-input: clamp(26px, 8vw, 36px);
+      --control-h: 68px;
     }
-
-    /* ====== Layout ====== */
     html, body { height: 100%; }
     body{
       margin:0; font-family: ui-sans-serif, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
       background: radial-gradient(1200px 800px at 80% -10%, #13243a 0%, var(--bg) 60%);
       color:var(--text);
-      /* Use modern viewport units on iOS 15+; fallbacks included */
-      min-height: 100svh;
-      min-height: -webkit-fill-available;
-      display:flex; align-items:stretch; justify-content:center;
+      min-height: 100svh; min-height: -webkit-fill-available;
+      display:flex; align-items:center; justify-content:center;
       padding: calc(env(safe-area-inset-top) + var(--pad)) var(--pad) calc(env(safe-area-inset-bottom) + var(--pad));
     }
-
-    .wrap { width:min(720px, 100%); display:flex; }
+    .wrap{ width:min(720px, 100%); }
     .card{
-      display:flex; flex-direction:column; gap: var(--gap);
       background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.03));
       border:1px solid rgba(255,255,255,.08);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      padding: var(--pad);
-      width:100%;
+      border-radius: var(--radius); box-shadow: var(--shadow);
+      padding: var(--pad); display:flex; flex-direction:column; gap: var(--gap);
     }
-
-    h1{ margin:0; font-size:var(--fs-title); letter-spacing:.2px; }
-    p.sub{ margin: 2px 0 6px; color:var(--muted); font-size: var(--fs-meta); }
-
+    h1{ margin:0; font-size:var(--fs-title); letter-spacing:.2px; text-align:center; }
     .row{ display:grid; gap: var(--gap); }
-
     .field{
-      display:grid; gap:10px;
-      background: var(--card);
-      border:1px solid #192436;
-      border-radius: calc(var(--radius) - 2px);
-      padding: 12px;
+      display:grid; gap:10px; background: var(--card);
+      border:1px solid #192436; border-radius: calc(var(--radius) - 2px); padding: 12px;
     }
-
-    .label{ display:flex; align-items:center; justify-content:space-between; font-size: var(--fs-label); color:var(--muted); }
-    .pill{ font-size: 13px; padding: 4px 10px; border-radius: 999px; background:#0b1220; border:1px solid #223149; color:#cfe1ff; }
-    .mono{ font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
-
-    /* BIG, finger-friendly input */
+    .label{ font-size: var(--fs-label); color: var(--muted); }
     .input{
-      width:100%;
-      height: var(--control-h);
-      font-size: var(--fs-input);
-      line-height: 1.2;
-      color: var(--text);
-      background: #0b1322;
-      border:1px solid #1c2a41;
-      border-radius: 14px;
-      padding: 8px 14px;
-      outline: none;
-      -webkit-appearance: none;
+      width:100%; height: var(--control-h);
+      font-size: var(--fs-input); line-height:1.2; color:var(--text);
+      background:#0b1322; border:1px solid #1c2a41; border-radius:14px;
+      padding: 10px 14px; outline:none; -webkit-appearance:none;
     }
-    .input:focus{ box-shadow: 0 0 0 3px rgba(34,197,94,.25); border-color:#2a5; }
-
-    .readonly{
-      background:#0b1322;
-      color:var(--text);
-    }
-
-    .meta{
-      display:flex; flex-wrap:wrap; gap:10px; align-items:center; justify-content:space-between;
-      color:var(--muted); font-size: var(--fs-meta);
-    }
-    .rate{ color:var(--accent); font-weight:700; }
-
-    .btn{
-      appearance:none; -webkit-appearance:none;
-      height: var(--btn-h); min-width: 140px;
-      padding: 0 16px; border-radius: 14px;
-      font-size: 17px; font-weight:600;
-      border:1px solid #2a374d; background:#0f172a; color:#dbeafe;
-      touch-action: manipulation; /* removes 300ms delay on older Safari */
-    }
-    .btn:active{ transform: translateY(1px); }
-
-    .footer{
-      display:flex; gap:10px; align-items:center; justify-content:space-between; flex-wrap:wrap;
-      margin-top: 4px; color:#9fb0c7; font-size: 14px;
-    }
-    .error{ color: var(--danger); }
-
-    /* ====== Make refresh button easy to reach on iPhone ====== */
-    .toolbar{
-      position: sticky;
-      bottom: 0;
-      padding-top: 6px;
-      background: linear-gradient(180deg, rgba(11,15,20,0), rgba(11,15,20,.6));
-      backdrop-filter: blur(4px);
-    }
-
-    @media (min-width: 640px){
-      /* slightly denser on bigger screens */
-      .row{ gap: calc(var(--gap) + 2px); }
-    }
+    .input:focus{ box-shadow: 0 0 0 3px rgba(147,197,253,.25); border-color:#2b4c7e; }
+    .readonly{ background:#0b1322; }
   </style>
 </head>
 <body>
   <main class="wrap" role="main">
     <section class="card" aria-labelledby="title">
-      <h1 id="title">Converti <span id="peso-name">peso</span> → Euro</h1>
-      <p class="sub">Box grandi e leggibili per iPhone. Inserisci l’importo sopra; sotto vedi l’equivalente in EUR. Il cambio è live con fallback.</p>
+      <h1 id="title">Conversione ARS - EUR</h1>
 
       <div class="row">
-        <!-- INPUT PESOS -->
+        <!-- ARS input -->
         <div class="field">
-          <div class="label">
-            <span>Valore in <span id="peso-code" class="mono pill">ARS</span></span>
-            <span class="mono" id="asof">–</span>
-          </div>
-          <input id="input-peso" class="input"
-                 type="text" inputmode="decimal" pattern="[0-9,.]*" autocomplete="off"
-                 placeholder="Es. 12.500"
-                 aria-label="Importo in pesos" />
+          <div class="label">ARS</div>
+          <input id="input-ars" class="input" type="text" inputmode="decimal" pattern="[0-9,.]*"
+                 autocomplete="off" placeholder="Es. 12.500" aria-label="Importo in ARS" autofocus />
         </div>
 
-        <!-- OUTPUT EUR -->
+        <!-- EUR output -->
         <div class="field" aria-live="polite">
-          <div class="label">
-            <span>Valore in <span class="mono pill">EUR</span></span>
-            <span id="rate" class="rate">—</span>
-          </div>
-          <input id="output-eur" class="input readonly" type="text" readonly placeholder="€ 0,00" aria-label="Importo convertito in euro" />
+          <div class="label">EUR</div>
+          <input id="output-eur" class="input readonly" type="text" readonly placeholder="€ 0,00" aria-label="Importo convertito in EUR" />
         </div>
-      </div>
-
-      <div class="toolbar">
-        <div class="meta">
-          <span id="msg"></span>
-          <button id="refresh" class="btn" type="button" aria-label="Aggiorna cambio">Aggiorna cambio</button>
-        </div>
-      </div>
-
-      <div class="footer">
-        <span>Valuta pesos: <span id="peso-code-inline" class="mono pill">ARS</span></span>
-        <span>Tip: aggiungi <span class="mono">?peso=MXN</span> all’URL per cambiare valuta</span>
       </div>
     </section>
   </main>
 
   <script>
-    (function () {
-      // ====== Config (mobile-friendly) ======
-      const urlParams = new URLSearchParams(location.search);
-      const PESO = (urlParams.get("peso") || urlParams.get("currency") || "ARS").toUpperCase();
+    (function(){
+      // TASSO FISSO: 1 ARS = 0,00061 EUR
+      const EUR_PER_ARS = 0.00061;
 
-      const FALLBACK_RATES = {
-        ARS: 0.0010, MXN: 0.0500, CLP: 0.00098, COP: 0.00023, DOP: 0.016, UYU: 0.022, PYG: 0.00013
-      };
+      const elIn  = document.getElementById('input-ars');
+      const elOut = document.getElementById('output-eur');
 
-      // ====== Elements ======
-      const elPesoCode = document.getElementById("peso-code");
-      const elPesoCodeInline = document.getElementById("peso-code-inline");
-      const elPesoName = document.getElementById("peso-name");
-      const elIn = document.getElementById("input-peso");
-      const elOut = document.getElementById("output-eur");
-      const elRate = document.getElementById("rate");
-      const elAsOf = document.getElementById("asof");
-      const elMsg = document.getElementById("msg");
-      const btnRefresh = document.getElementById("refresh");
+      const fmtEUR = new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' });
 
-      // ====== Labels ======
-      elPesoCode.textContent = PESO;
-      elPesoCodeInline.textContent = PESO;
-      elPesoName.textContent = (PESO === "MXN") ? "peso messicano" :
-                               (PESO === "ARS") ? "peso argentino" :
-                               (PESO === "CLP") ? "peso cileno" :
-                               (PESO === "COP") ? "peso colombiano" : "peso";
-
-      // ====== Formatters ======
-      const fmtEUR = new Intl.NumberFormat("it-IT", { style: "currency", currency: "EUR" });
-      const fmtNum = new Intl.NumberFormat("it-IT", { maximumFractionDigits: 6 });
-      const fmtDate = new Intl.DateTimeFormat("it-IT", { dateStyle: "medium", timeStyle: "short", timeZone: "Europe/Rome" });
-
-      // ====== State ======
-      let rateEURperPeso = null; // EUR per 1 PESO
-      let rateTimestamp = null;
-      const KEY = `rate_${PESO}_EUR`;
-
-      // Load cached rate (≤ 6h)
-      try {
-        const cached = JSON.parse(localStorage.getItem(KEY) || "null");
-        if (cached && Date.now() - cached.ts < 6 * 60 * 60 * 1000 && typeof cached.rate === "number") {
-          rateEURperPeso = cached.rate; rateTimestamp = cached.ts;
-          paintRate();
-        }
-      } catch {}
-
-      // ====== Helpers ======
-      function normalizeInputToNumber(v) {
+      function normalizeToNumber(v){
         if (!v) return 0;
-        v = ("" + v).trim().replace(/\s/g, "");
-        // remove thousands separators (dot/quote/space)
-        v = v.replace(/\./g, "").replace(/'/g, "");
-        // Italian decimal comma → dot
-        v = v.replace(",", ".");
+        v = (''+v).trim().replace(/\s/g,'');
+        // rimuove separatori migliaia comuni . ' spazio
+        v = v.replace(/\./g,'').replace(/'/g,'');
+        // virgola decimale italiana -> punto
+        v = v.replace(',', '.');
         const n = Number(v);
-        return isFinite(n) ? n : 0;
+        return Number.isFinite(n) ? n : 0;
       }
 
-      function paintRate() {
-        if (rateEURperPeso) {
-          elRate.textContent = `1 ${PESO} = ${fmtNum.format(rateEURperPeso)} EUR`;
-          const d = rateTimestamp ? new Date(rateTimestamp) : new Date();
-          elAsOf.textContent = fmtDate.format(d);
-        } else {
-          elRate.textContent = "—";
-          elAsOf.textContent = "—";
-        }
+      function convert(){
+        const ars = normalizeToNumber(elIn.value);
+        const eur = ars * EUR_PER_ARS;
+        elOut.value = ars ? fmtEUR.format(eur) : '';
       }
 
-      function convert() {
-        const val = normalizeInputToNumber(elIn.value);
-        const eur = val * (rateEURperPeso || 0);
-        elOut.value = eur ? fmtEUR.format(eur) : "";
-      }
+      // Aggiorna in tempo reale mentre si scrive
+      elIn.addEventListener('input', convert);
 
-      async function fetchRate() {
-        elMsg.textContent = "Aggiorno il cambio…";
-        elMsg.classList.remove("error");
-        const endpoints = [
-          `https://api.frankfurter.app/latest?amount=1&from=${encodeURIComponent(PESO)}&to=EUR`,
-          `https://api.exchangerate.host/latest?base=${encodeURIComponent(PESO)}&symbols=EUR`
-        ];
-        for (const url of endpoints) {
-          try {
-            const r = await fetch(url, { cache: "no-store" });
-            if (!r.ok) continue;
-            const data = await r.json();
-            const eur = data?.rates?.EUR;
-            if (typeof eur === "number" && eur > 0) {
-              rateEURperPeso = eur;
-              rateTimestamp = Date.now();
-              localStorage.setItem(KEY, JSON.stringify({ rate: rateEURperPeso, ts: rateTimestamp }));
-              paintRate(); convert();
-              elMsg.textContent = `Cambio aggiornato (${new URL(url).hostname}).`;
-              return;
-            }
-          } catch {}
-        }
-        // Fallback
-        rateEURperPeso = FALLBACK_RATES[PESO] ?? 0.001;
-        rateTimestamp = Date.now();
-        paintRate(); convert();
-        elMsg.textContent = "Non riesco a recuperare il cambio live: uso un valore fisso.";
-        elMsg.classList.add("error");
-      }
-
-      // ====== UX niceties for iPhone ======
-      // Make input select-all on first focus (handy for quick overwrite)
-      let firstFocus = true;
-      elIn.addEventListener("focus", () => {
-        if (firstFocus) { elIn.select(); firstFocus = false; }
-      });
-
-      // Convert on every input
-      elIn.addEventListener("input", convert);
-      // Pull fresh rate on demand
-      btnRefresh.addEventListener("click", fetchRate);
-
-      // Initial paint + try to fetch if no valid cached rate
-      paintRate();
-      if (!rateEURperPeso) fetchRate();
-
-      // Pre-fill via hash #val=12345
-      try {
+      // Se la pagina viene aperta con un valore precompilato (#val=12345), converti subito
+      try{
         const hash = new URLSearchParams(location.hash.slice(1));
-        const val = hash.get("val");
+        const val = hash.get('val');
         if (val) { elIn.value = val; convert(); }
-      } catch {}
+      }catch{}
+
+      // Primo rendering: mostra placeholder "€ 0,00" finché non si digita
+      convert();
     })();
   </script>
 </body>
